@@ -760,21 +760,18 @@ We welcome contributions from the security community. OMINO is what it is thanks
 <tr>
 <td align="center">
 <img src="https://github.com/Athexblackhat.png" width="90px" style="border-radius:50%"/><br/>
-<b>@xer0dayz</b><br/>
+<b>@THEX BLACK HAT</b><br/>
 <sub>Creator & Lead Developer</sub><br/>
-<a href="https://github.com/Athexblackhat">GitHub</a> · <a href="https://twitter.com/xer0dayz">Twitter</a>
+<a href="https://github.com/Athexblackhat">GitHub</a> ·
 </td>
 <td align="center">
 <img src="https://github.com/gbiagomba.png" width="90px" style="border-radius:50%"/><br/>
-<b>D4rth R3v4n</b><br/>
-<sub>Multi-Distro Architect</sub><br/>
-<a href="https://github.com/gbiagomba">GitHub</a>
+<b>DIR CYBER</b><br/>
+<sub>Forensic Investigator</sub><br/>
+<a href="https://github.com/d1r-cyb3r">GitHub</a>
 </td>
 </tr>
 </table>
-
-*Plus 35+ contributors worldwide — [view all →](https://github.com/Athexblackhat/OMINO/graphs/contributors)*
-
 </div>
 
 ---
@@ -793,28 +790,7 @@ We welcome contributions from the security community. OMINO is what it is thanks
 
 ---
 
-## 📰 News & Releases
-
-| Date | Release | Highlights |
-|---|---|---|
-| **April 2026** | OMINO Black Hat Edition | Complete rebranding, animated UI, multi-distro |
-| **February 2026** | SILENTCHAIN AI CE v1.1.3 | AI-powered chain analysis |
-| **January 2026** | OMINO SE v11.0 | Enterprise features, API v1.0 |
-
-[View all releases →](https://github.com/Athexblackhat/OMINO/releases)
-
 ---
-
-## 💬 Community & Support
-
-<div align="center">
-
-[![GitHub Issues](https://img.shields.io/badge/GitHub-Issues-e94560?style=for-the-badge&logo=github&labelColor=1a1a2e)](https://github.com/Athexblackhat/OMINO/issues)
-[![Twitter](https://img.shields.io/badge/Twitter-@xer0dayz-1DA1F2?style=for-the-badge&logo=twitter&labelColor=1a1a2e)](https://twitter.com/xer0dayz)
-[![YouTube](https://img.shields.io/badge/YouTube-Tutorials-FF0000?style=for-the-badge&logo=youtube&labelColor=1a1a2e)](https://youtube.com)
-[![Wiki](https://img.shields.io/badge/Wiki-Documentation-533483?style=for-the-badge&logo=gitbook&labelColor=1a1a2e)](https://github.com/Athexblackhat/OMINO/wiki)
-
-</div>
 
 ---
 
@@ -824,7 +800,6 @@ This project is licensed under the **MIT License** — see [LICENSE.md](LICENSE.
 
 Third-party tool notices: [THIRD\_PARTY\_LICENSES.md](THIRD_PARTY_LICENSES.md)
 
-**Trademark:** "OMINO" and the OMINO logo are trademarks of OMINOSecurity LLC. Use in derivative works requires permission. Contact: [OMINOsecurity.com](https://OMINOsecurity.com)
 
 ---
 

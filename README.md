@@ -52,10 +52,7 @@
 <br/><br/>
 
 <!-- QUICK LINKS -->
-[📖 Docs](https://github.com/Athexblackhat/OMINO/wiki) · [🚀 Install](#-installation) · [🎯 Quick Start](#-quick-start) · [🔗 Integrations](#-integrations) · [💬 Community](#-community--support) · [💲 Pricing](https://OMINOsecurity.com)
-
-</div>
-
+[📖 Docs](https://github.com/Athexblackhat/OMINO/wiki) · [🚀 Install](#-installation) · [🎯 Quick Start](#-quick-start) · [🔗 Integrations](#-integrations) · [💬 Community](#-community--support).
 
 ```mermaid
 graph TD
@@ -736,20 +733,6 @@ git push origin feature/amazing-feature
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions from the security community. OMINO is what it is thanks to **35+ contributors** worldwide.
-
-| How to Help | Details |
-|---|---|
-| 🐛 **Bug Reports** | [Open an issue](https://github.com/Athexblackhat/OMINO/issues) with reproduction steps |
-| ✨ **Feature Requests** | Open an issue with `[Feature]` prefix |
-| 🔧 **Code** | New modes, bug fixes, optimizations — see Developer Guide |
-| 📝 **Docs** | Wiki updates, examples, tutorials |
-| 🧪 **Testing** | Verify on multiple distributions |
-
-> For major changes, open an issue first to discuss your proposed design.
-
 ---
 
 ## 👥 Team & Contributors
@@ -815,11 +798,10 @@ Third-party tool notices: [THIRD\_PARTY\_LICENSES.md](THIRD_PARTY_LICENSES.md)
 
 **🜛 OMINO — The Eye That Sees All 🜛**
 
-*Built by pentesters. For pentesters. Since 2015.*
+*Built by ATHEX BLACK HAT. For pentesters.*
 
 [![Star](https://img.shields.io/github/stars/Athexblackhat/OMINO.svg?style=social&label=Star)](https://github.com/Athexblackhat/OMINO/stargazers)
 [![Fork](https://img.shields.io/github/forks/Athexblackhat/OMINO.svg?style=social&label=Fork)](https://github.com/Athexblackhat/OMINO/network/members)
-[![Follow](https://img.shields.io/twitter/follow/xer0dayz.svg?style=social&label=Follow)](https://twitter.com/xer0dayz)
 
 `penetration-testing` `offensive-security` `attack-surface-management` `vulnerability-scanner` `recon` `osint` `red-team` `bug-bounty` `security-tools` `exploitation` `automation`
 

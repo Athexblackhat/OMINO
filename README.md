@@ -39,7 +39,6 @@
 <!-- BADGES ROW 2 -->
 [![Stars](https://img.shields.io/github/stars/Athexblackhat/OMINO.svg?style=for-the-badge&logo=starship&logoColor=white&labelColor=1a1a2e&color=e94560)](https://github.com/Athexblackhat/OMINO/stargazers)
 [![Forks](https://img.shields.io/github/forks/Athexblackhat/OMINO.svg?style=for-the-badge&logo=git&logoColor=white&labelColor=1a1a2e&color=533483)](https://github.com/Athexblackhat/OMINO/network/members)
-[![Twitter](https://img.shields.io/twitter/follow/xer0dayz.svg?style=for-the-badge&logo=twitter&logoColor=white&labelColor=1a1a2e&color=0f3460)](https://twitter.com/xer0dayz)
 [![Docker](https://img.shields.io/badge/Docker-Ready-e94560?style=for-the-badge&logo=docker&logoColor=white&labelColor=1a1a2e)](https://hub.docker.com)
 
 <br/>

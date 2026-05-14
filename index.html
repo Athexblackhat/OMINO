@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>omino — The Eye That Sees All | ATHEX BLACK HAT × DIR CYBER</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Black+Ops+One&family=Creepster&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --blood-primary: #8b0000;
+    --blood-dark: #3a0000;
+    --blood-bright: #ff1a1a;
+    --blood-glow: #ff3333;
+    --red: #e94560;
+    --purple: #533483;
+    --navy: #0f3460;
+    --dark: #16213e;
+    --darkest: #1a1a2e;
+    --black: #050510;
+    --deep-black: #020208;
+    --white: #e8e8f0;
+    --dim: #6e7190;
+    --crimson: #dc143c;
+    --dark-red: #4a0000;
+    --glow-blood: 0 0 20px #ff1a1a66, 0 0 60px #8b000044, 0 0 100px #3a000022;
+    --glow-red: 0 0 20px #e9456066, 0 0 60px #e9456022;
+    --glow-purple: 0 0 20px #53348366, 0 0 60px #53348322;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--deep-black);
+    color: var(--white);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 17px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── BLOOD CUSTOM CURSOR ── */
+  .custom-cursor {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--blood-bright);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    transition: transform 0.1s;
+    box-shadow: 0 0 15px var(--blood-glow), 0 0 30px rgba(139,0,0,0.5);
+    animation: cursorPulse 1.5s infinite;
+  }
+  @keyframes cursorPulse {
+    0%,100% { box-shadow: 0 0 15px var(--blood-glow), 0 0 30px rgba(139,0,0,0.5); }
+    50% { box-shadow: 0 0 25px var(--blood-glow), 0 0 50px rgba(139,0,0,0.8); }
+  }
+
+  /* ── BLOOD DRIP EFFECT ON SCROLL ── */
+  .blood-drip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    animation: dripFall 2s ease-in forwards;
+    opacity: 0.8;
+  }
+  @keyframes dripFall {
+    0% { transform: translateY(-100px); opacity: 0; }
+    20% { opacity: 0.8; }
+    80% { opacity: 0.6; }
+    100% { transform: translateY(105vh); opacity: 0; }
+  }
+
+  /* ── CANVAS BACKGROUND ── */
+  #matrix-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.08;
+    pointer-events: none;
+  }
+
+  /* ── BLOOD OVERLAY ── */
+  #blood-overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.03;
+    pointer-events: none;
+    background: 
+      radial-gradient(ellipse at 20% 50%, rgba(139,0,0,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(220,20,60,0.2) 0%, transparent 40%),
+      radial-gradient(ellipse at 50% 80%, rgba(74,0,0,0.3) 0%, transparent 50%);
+  }
+
+  /* ── LAYOUT ── */
+  .page { position: relative; z-index: 1; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: linear-gradient(180deg, rgba(5,5,16,0.98) 0%, rgba(5,5,16,0.7) 80%, transparent 100%);
+    padding: 1.2rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid rgba(139,0,0,0.3);
+    backdrop-filter: blur(15px);
+  }
+  .nav-logo {
+    font-family: 'Black Ops One', cursive;
+    font-size: 1.4rem;
+    color: var(--blood-bright);
+    text-shadow: var(--glow-blood);
+    letter-spacing: 0.2em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .nav-logo-svg {
+    width: 40px;
+    height: 30px;
+    filter: drop-shadow(0 0 10px var(--blood-glow));
+  }
+  .nav-by {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+    display: block;
+    text-align: right;
+    line-height: 1;
+  }
+  .nav-by span {
+    color: var(--blood-bright);
+    text-shadow: 0 0 10px var(--blood-glow);
+  }
+  .nav-links { display: flex; gap: 2.5rem; align-items: center; }
+  .nav-links a {
+    color: var(--dim); text-decoration: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem; letter-spacing: 0.15em;
+    transition: all 0.3s; position: relative;
+    padding: 0.25rem 0;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--blood-bright);
+    box-shadow: 0 0 10px var(--blood-glow);
+    transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--blood-bright); text-shadow: 0 0 10px var(--blood-glow); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 50% at 50% 35%, rgba(139,0,0,0.25) 0%, transparent 70%),
+      radial-gradient(circle at 20% 80%, rgba(220,20,60,0.1) 0%, transparent 40%),
+      radial-gradient(circle at 80% 20%, rgba(74,0,0,0.15) 0%, transparent 40%);
+    pointer-events: none;
+    animation: heroGlow 4s ease-in-out infinite;
+  }
+  @keyframes heroGlow {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ── LOGO SVG ── */
+  .logo-wrap {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+  .logo-svg {
+    width: 180px;
+    height: 180px;
+    filter: drop-shadow(0 0 30px var(--blood-glow)) drop-shadow(0 0 60px rgba(139,0,0,0.5));
+  }
+  .logo-outer-ring { animation: logoRotate 20s linear infinite; transform-origin: 90px 90px; }
+  .logo-inner-ring { animation: logoRotateReverse 15s linear infinite; transform-origin: 90px 90px; }
+  .logo-eye { animation: logoPulse 3s ease-in-out infinite; }
+  .logo-iris { animation: irisGlow 3s ease-in-out infinite; }
+  .logo-scan { animation: scanLine 2s linear infinite; }
+  .logo-particle { animation: particleOrbit 4s linear infinite; }
+  .logo-particle2 { animation: particleOrbit2 5s linear infinite; }
+  @keyframes logoRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes logoRotateReverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+  @keyframes logoPulse {
+    0%,100% { opacity: 0.8; filter: drop-shadow(0 0 20px var(--blood-glow)); }
+    50% { opacity: 1; filter: drop-shadow(0 0 40px var(--blood-glow)) drop-shadow(0 0 80px rgba(139,0,0,0.6)); }
+  }
+  @keyframes irisGlow {
+    0%,100% { fill: var(--blood-bright); }
+    50% { fill: var(--crimson); }
+  }
+  @keyframes scanLine {
+    0% { transform: translateY(-40px); opacity: 0; }
+    20% { opacity: 0.9; }
+    80% { opacity: 0.9; }
+    100% { transform: translateY(40px); opacity: 0; }
+  }
+  @keyframes particleOrbit {
+    0% { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+  }
+  @keyframes particleOrbit2 {
+    0% { transform: rotate(120deg) translateX(50px) rotate(-120deg); }
+    100% { transform: rotate(480deg) translateX(50px) rotate(-480deg); }
+  }
+
+  .hero-symbol {
+    font-size: 4rem;
+    color: var(--blood-bright);
+    text-shadow: var(--glow-blood);
+    animation: symbolPulse 3s ease-in-out infinite;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: 'Creepster', cursive;
+  }
+  @keyframes symbolPulse {
+    0%,100% { opacity: 1; text-shadow: var(--glow-blood); }
+    50% { opacity: 0.7; text-shadow: 0 0 60px var(--blood-glow), 0 0 120px var(--blood-dark); }
+  }
+
+  .hero-title {
+    font-family: 'Black Ops One', cursive;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    color: var(--white);
+    text-shadow: 0 0 60px rgba(255,26,26,0.4), 0 0 120px rgba(139,0,0,0.3), 0 4px 8px rgba(0,0,0,0.5);
+    margin-bottom: 0.5rem;
+    animation: titleIn 1.2s ease forwards;
+  }
+  @keyframes titleIn {
+    0% { opacity: 0; transform: translateY(-40px) scale(0.9); filter: blur(10px); }
+    60% { filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  .hero-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--blood-bright);
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    animation: fadeUp 1s 0.3s ease both;
+    text-shadow: 0 0 20px var(--blood-glow);
+  }
+  .hero-credits {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 0.25em;
+    margin-bottom: 2rem;
+    animation: fadeUp 1s 0.4s ease both;
+  }
+  .hero-credits span {
+    color: var(--blood-bright);
+    text-shadow: 0 0 15px var(--blood-glow);
+  }
+  .hero-tagline {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--dim);
+    max-width: 650px;
+    margin: 0 auto 2.5rem;
+    font-style: italic;
+    animation: fadeUp 1s 0.5s ease both;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 30px rgba(139,0,0,0.3);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Badges */
+  .badges {
+    display: flex; flex-wrap: wrap; gap: 0.8rem;
+    justify-content: center; margin-bottom: 3rem;
+    animation: fadeUp 1s 0.7s ease both;
+  }
+  .badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.15em;
+    padding: 0.45rem 1.1rem;
+    border: 1px solid; border-radius: 3px;
+    transition: all 0.3s; position: relative;
+    overflow: hidden;
+  }
+  .badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .badge-red {
+    border-color: var(--blood-bright);
+    color: var(--blood-bright);
+    background: rgba(139,0,0,0.15);
+    box-shadow: 0 0 15px rgba(139,0,0,0.2);
+  }
+  .badge-red::before { background: linear-gradient(135deg, transparent, rgba(255,26,26,0.1), transparent); }
+  .badge-purple {
+    border-color: var(--purple);
+    color: var(--purple);
+    background: rgba(83,52,131,0.1);
+  }
+  .badge-navy {
+    border-color: #4a8fd4;
+    color: #4a8fd4;
+    background: rgba(15,52,96,0.1);
+  }
+  .badge-gold {
+    border-color: #ffd700;
+    color: #ffd700;
+    background: rgba(255,215,0,0.08);
+    box-shadow: 0 0 15px rgba(255,215,0,0.15);
+  }
+  .badge:hover {
+    filter: brightness(1.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 25px rgba(139,0,0,0.3);
+  }
+  .badge:hover::before { opacity: 1; }
+
+  /* CTA buttons */
+  .hero-cta {
+    display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 1s 0.9s ease both;
+  }
+  .btn {
+    font-family: 'Black Ops One', cursive;
+    font-size: 0.8rem; font-weight: 400;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    padding: 1rem 2.5rem;
+    border: 2px solid; border-radius: 4px;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.3s; display: inline-block;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .btn:hover::before { left: 100%; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blood-dark), var(--blood-primary));
+    border-color: var(--blood-bright);
+    color: #fff;
+    box-shadow: var(--glow-blood);
+  }
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--blood-bright);
+    box-shadow: 0 0 40px var(--blood-glow), 0 0 80px rgba(139,0,0,0.5);
+    transform: translateY(-3px);
+  }
+  .btn-secondary {
+    background: transparent;
+    border-color: var(--blood-bright);
+    color: var(--blood-bright);
+    box-shadow: 0 0 15px rgba(139,0,0,0.2);
+  }
+  .btn-secondary:hover {
+    background: rgba(139,0,0,0.15);
+    color: #fff;
+    box-shadow: var(--glow-blood);
+    transform: translateY(-3px);
+  }
+  .btn-tertiary {
+    background: transparent;
+    border-color: var(--purple);
+    color: var(--purple);
+  }
+  .btn-tertiary:hover {
+    background: var(--purple);
+    color: #fff;
+    box-shadow: var(--glow-purple);
+    transform: translateY(-3px);
+  }
+
+  /* scroll indicator */
+  .scroll-hint {
+    position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    animation: fadeUp 1s 1.5s ease both;
+  }
+  .scroll-hint span {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--blood-bright);
+    letter-spacing: 0.3em;
+    text-shadow: 0 0 10px var(--blood-glow);
+  }
+  .scroll-arrow {
+    width: 24px; height: 24px;
+    border-right: 2px solid var(--blood-bright);
+    border-bottom: 2px solid var(--blood-bright);
+    transform: rotate(45deg);
+    animation: bounce 1.5s infinite;
+    box-shadow: 0 0 10px var(--blood-glow);
+  }
+  @keyframes bounce {
+    0%,100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(8px); }
+  }
+
+  /* ── STATS STRIP ── */
+  .stats-strip {
+    background: linear-gradient(90deg, var(--deep-black) 0%, rgba(139,0,0,0.2) 30%, rgba(139,0,0,0.2) 70%, var(--deep-black) 100%);
+    border-top: 2px solid rgba(139,0,0,0.3);
+    border-bottom: 2px solid rgba(139,0,0,0.3);
+    padding: 3rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .stats-strip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,26,26,0.03), transparent);
+    animation: statsShimmer 4s linear infinite;
+  }
+  @keyframes statsShimmer {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(50%); }
+  }
+  .stats-grid {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 0;
+    position: relative; z-index: 1;
+  }
+  .stat {
+    text-align: center; padding: 0 3.5rem;
+    border-right: 1px solid rgba(139,0,0,0.2);
+    animation: countUp 1s ease both;
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Black Ops One', cursive;
+    font-size: 2.8rem;
+    font-weight: 400;
+    color: var(--blood-bright);
+    display: block;
+    line-height: 1;
+    text-shadow: var(--glow-blood);
+  }
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 7rem 0; position: relative; }
+
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--blood-bright);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 15px var(--blood-glow);
+  }
+  .section-title {
+    font-family: 'Black Ops One', cursive;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 30px rgba(139,0,0,0.3);
+  }
+  .section-lead {
+    color: var(--dim);
+    font-size: 1.1rem;
+    max-width: 650px;
+    margin-bottom: 3.5rem;
+    line-height: 1.8;
+  }
+
+  /* ── FEATURES GRID ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1px;
+    background: rgba(139,0,0,0.15);
+    border: 1px solid rgba(139,0,0,0.2);
+  }
+  .feature-card {
+    background: var(--deep-black);
+    padding: 2.5rem 2rem;
+    transition: all 0.4s;
+    position: relative; overflow: hidden;
+    cursor: default;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--blood-bright), transparent);
+    transform: scaleX(0);
+    transition: transform 0.5s;
+  }
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(139,0,0,0.1) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .feature-card:hover {
+    background: rgba(10,0,0,0.8);
+    border-color: rgba(139,0,0,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 30px rgba(139,0,0,0.1);
+  }
+  .feature-card:hover::before { transform: scaleX(1); }
+  .feature-card:hover::after { opacity: 1; }
+  .feature-icon {
+    font-size: 2.2rem;
+    margin-bottom: 1.2rem;
+    display: block;
+    filter: drop-shadow(0 0 12px rgba(255,26,26,0.6));
+    transition: transform 0.3s;
+  }
+  .feature-card:hover .feature-icon { transform: scale(1.1); }
+  .feature-title {
+    font-family: 'Black Ops One', cursive;
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+  .feature-desc {
+    color: var(--dim);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  /* ── SCAN MODES TABLE ── */
+  .modes-table-wrap {
+    overflow-x: auto;
+    border: 2px solid rgba(139,0,0,0.2);
+    border-radius: 4px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: linear-gradient(180deg, rgba(139,0,0,0.25) 0%, rgba(139,0,0,0.1) 100%); }
+  th {
+    font-family: 'Black Ops One', cursive;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--blood-bright);
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+    border-bottom: 2px solid rgba(139,0,0,0.3);
+    text-shadow: 0 0 15px var(--blood-glow);
+  }
+  td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.95rem;
+    vertical-align: middle;
+  }
+  td:first-child {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--blood-bright);
+    font-size: 0.88rem;
+    letter-spacing: 0.1em;
+  }
+  tr {
+    transition: all 0.3s;
+  }
+  tr:hover td {
+    background: rgba(139,0,0,0.08);
+  }
+  .pill {
+    display: inline-block;
+    padding: 0.2rem 0.8rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .pill-green {
+    background: rgba(0,200,100,0.12);
+    color: #00c864;
+    border: 1px solid rgba(0,200,100,0.3);
+  }
+  .pill-yellow {
+    background: rgba(255,180,0,0.12);
+    color: #ffb400;
+    border: 1px solid rgba(255,180,0,0.3);
+  }
+  .pill-red {
+    background: rgba(255,26,26,0.15);
+    color: var(--blood-bright);
+    border: 1px solid rgba(255,26,26,0.4);
+    box-shadow: 0 0 10px rgba(255,26,26,0.2);
+  }
+  .pill-max {
+    background: rgba(139,0,0,0.25);
+    color: #ff4444;
+    border: 1px solid rgba(255,26,26,0.6);
+    box-shadow: 0 0 20px rgba(255,26,26,0.3);
+    animation: maxPillPulse 2s infinite;
+  }
+  @keyframes maxPillPulse {
+    0%,100% { box-shadow: 0 0 20px rgba(255,26,26,0.3); }
+    50% { box-shadow: 0 0 35px rgba(255,26,26,0.5); }
+  }
+
+  /* ── INTEGRATIONS ── */
+  .integrations-cats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .int-cat {
+    border: 1px solid rgba(139,0,0,0.15);
+    background: var(--deep-black);
+    padding: 2rem;
+    border-radius: 4px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .int-cat::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 3px; height: 0;
+    background: var(--blood-bright);
+    transition: height 0.4s;
+    box-shadow: 0 0 10px var(--blood-glow);
+  }
+  .int-cat:hover {
+    border-color: rgba(139,0,0,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 20px rgba(139,0,0,0.1);
+  }
+  .int-cat:hover::before { height: 100%; }
+  .int-cat-title {
+    font-family: 'Black Ops One', cursive;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    color: var(--blood-bright);
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+  }
+  .int-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .int-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.7rem;
+    background: rgba(255,255,255,0.03);
+    color: var(--dim);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 3px;
+    transition: all 0.3s;
+  }
+  .int-tag:hover {
+    color: var(--blood-bright);
+    border-color: rgba(139,0,0,0.5);
+    background: rgba(139,0,0,0.12);
+    box-shadow: 0 0 15px rgba(139,0,0,0.2);
+    transform: translateY(-1px);
+  }
+
+  /* ── TERMINAL ── */
+  .terminal {
+    background: #030308;
+    border: 2px solid rgba(139,0,0,0.25);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.7), 0 0 40px rgba(139,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .terminal-bar {
+    background: rgba(139,0,0,0.12);
+    padding: 0.8rem 1.2rem;
+    display: flex; align-items: center; gap: 0.6rem;
+    border-bottom: 1px solid rgba(139,0,0,0.2);
+  }
+  .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-red { background: var(--blood-bright); box-shadow: 0 0 8px var(--blood-glow); }
+  .dot-yellow { background: #ffb400; }
+  .dot-green { background: #00c864; }
+  .terminal-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--dim);
+    margin-left: 0.5rem;
+    letter-spacing: 0.15em;
+  }
+  .terminal-body {
+    padding: 2rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.88rem;
+    line-height: 2;
+  }
+  .t-prompt { color: var(--blood-bright); text-shadow: 0 0 10px var(--blood-glow); }
+  .t-cmd { color: var(--white); }
+  .t-comment { color: #4a3050; }
+  .t-out { color: #00c864; }
+  .t-info { color: var(--purple); }
+  .t-warn { color: #ffb400; }
+  .t-cursor {
+    display: inline-block;
+    width: 10px; height: 1.2em;
+    background: var(--blood-bright);
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+    box-shadow: 0 0 10px var(--blood-glow);
+  }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* ── INSTALL TABS ── */
+  .install-tabs {
+    display: flex; gap: 0;
+    border-bottom: 2px solid rgba(139,0,0,0.2);
+    margin-bottom: 0;
+  }
+  .tab-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    padding: 0.85rem 1.8rem;
+    background: none;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab-btn.active {
+    color: var(--blood-bright);
+    border-bottom-color: var(--blood-bright);
+    text-shadow: 0 0 15px var(--blood-glow);
+  }
+  .tab-btn:hover { color: var(--white); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── ARCHITECTURE VISUAL ── */
+  .arch-flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: 2rem;
+  }
+  .arch-col { display: flex; flex-direction: column; gap: 0.85rem; }
+  .arch-box {
+    background: var(--deep-black);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 0.9rem 1.2rem;
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--dim);
+    transition: all 0.3s;
+    cursor: default;
+    border-radius: 3px;
+  }
+  .arch-box:hover {
+    border-color: var(--blood-bright);
+    color: var(--white);
+    box-shadow: 0 0 20px rgba(139,0,0,0.15);
+  }
+  .arch-box.accent {
+    border-color: rgba(139,0,0,0.3);
+    color: var(--white);
+  }
+  .arch-center-box {
+    background: rgba(139,0,0,0.15);
+    border: 2px solid var(--blood-bright);
+    padding: 1.8rem;
+    text-align: center;
+    box-shadow: var(--glow-blood);
+    min-width: 150px;
+    border-radius: 6px;
+    animation: centerPulse 3s ease-in-out infinite;
+  }
+  @keyframes centerPulse {
+    0%,100% { box-shadow: var(--glow-blood); }
+    50% { box-shadow: 0 0 40px var(--blood-glow), 0 0 80px rgba(139,0,0,0.5); }
+  }
+  .arch-engine {
+    font-family: 'Black Ops One', cursive;
+    font-size: 1.1rem;
+    color: var(--blood-bright);
+    display: block;
+    text-shadow: var(--glow-blood);
+    letter-spacing: 0.15em;
+  }
+  .arch-engine-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+    display: block;
+    margin-top: 0.4rem;
+  }
+  .arch-arrow {
+    font-size: 1.8rem;
+    color: var(--blood-bright);
+    text-align: center;
+    text-shadow: var(--glow-blood);
+    animation: arrowPulse 2s ease-in-out infinite;
+  }
+  @keyframes arrowPulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
+  }
+
+  /* ── TEAM ── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2rem;
+  }
+  .team-card {
+    background: var(--deep-black);
+    border: 1px solid rgba(139,0,0,0.15);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: all 0.4s;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: var(--blood-bright);
+    box-shadow: 0 0 20px var(--blood-glow);
+    transition: width 0.5s;
+  }
+  .team-card:hover {
+    border-color: rgba(139,0,0,0.5);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 30px rgba(139,0,0,0.1);
+    transform: translateY(-5px);
+  }
+  .team-card:hover::before { width: 100%; }
+  .team-avatar {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blood-dark), var(--blood-primary));
+    margin: 0 auto 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    border: 2px solid rgba(139,0,0,0.4);
+    box-shadow: 0 0 30px rgba(139,0,0,0.3);
+    transition: all 0.3s;
+  }
+  .team-card:hover .team-avatar {
+    box-shadow: 0 0 50px rgba(139,0,0,0.5);
+    border-color: var(--blood-bright);
+  }
+  .team-name {
+    font-family: 'Black Ops One', cursive;
+    font-size: 1rem;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.05em;
+  }
+  .team-role {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--blood-bright);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.8rem;
+    text-shadow: 0 0 10px var(--blood-glow);
+  }
+  .team-handle {
+    color: var(--dim);
+    font-size: 0.85rem;
+  }
+  .team-link {
+    color: var(--blood-bright);
+    text-decoration: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    transition: all 0.3s;
+  }
+  .team-link:hover {
+    text-shadow: 0 0 15px var(--blood-glow);
+  }
+
+  /* ── WARNING BANNER ── */
+  .warning-banner {
+    background: rgba(139,0,0,0.08);
+    border: 2px solid rgba(139,0,0,0.4);
+    border-left: 5px solid var(--blood-bright);
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    border-radius: 4px;
+    box-shadow: 0 0 30px rgba(139,0,0,0.1), inset 0 0 30px rgba(139,0,0,0.03);
+    animation: warningPulse 3s ease-in-out infinite;
+  }
+  @keyframes warningPulse {
+    0%,100% { border-left-color: var(--blood-bright); box-shadow: 0 0 30px rgba(139,0,0,0.1); }
+    50% { border-left-color: #ff4444; box-shadow: 0 0 50px rgba(139,0,0,0.2); }
+  }
+  .warning-banner strong {
+    color: var(--blood-bright);
+    font-family: 'Black Ops One', cursive;
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 15px var(--blood-glow);
+  }
+  .warning-banner p {
+    color: var(--dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 2px solid rgba(139,0,0,0.2);
+    background: var(--deep-black);
+    padding: 4rem 0 2rem;
+    text-align: center;
+    position: relative;
+  }
+  .footer-symbol {
+    font-size: 2.5rem;
+    color: var(--blood-bright);
+    text-shadow: var(--glow-blood);
+    margin-bottom: 0.5rem;
+    display: block;
+    animation: symbolPulse 3s ease-in-out infinite;
+  }
+  .footer-title {
+    font-family: 'Black Ops One', cursive;
+    font-size: 1.3rem;
+    letter-spacing: 0.25em;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+  .footer-credits {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+    margin-bottom: 0.3rem;
+  }
+  .footer-credits span {
+    color: var(--blood-bright);
+    text-shadow: 0 0 10px var(--blood-glow);
+  }
+  .footer-tagline {
+    color: var(--dim);
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-bottom: 1.8rem;
+  }
+  .footer-links {
+    display: flex;
+    gap: 2.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.8rem;
+  }
+  .footer-links a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--dim);
+    text-decoration: none;
+    letter-spacing: 0.15em;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .footer-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--blood-bright);
+    box-shadow: 0 0 10px var(--blood-glow);
+    transition: width 0.3s;
+  }
+  .footer-links a:hover {
+    color: var(--blood-bright);
+    text-shadow: 0 0 15px var(--blood-glow);
+  }
+  .footer-links a:hover::after { width: 100%; }
+  .footer-copy {
+    font-size: 0.8rem;
+    color: #3a3a5a;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(139,0,0,0.4), transparent);
+    margin: 0;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(35px);
+    transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── SCAN LINE EFFECT ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .stats-strip .stat { padding: 1.2rem 1.5rem; border-right: none; border-bottom: 1px solid rgba(139,0,0,0.2); }
+    .stats-strip .stat:last-child { border-bottom: none; }
+    .arch-flow { grid-template-columns: 1fr; }
+    .arch-arrow { transform: rotate(90deg); }
+    .hero-title { font-size: 2.5rem; }
+  }
+
+  /* ── GLITCH TEXT ── */
+  @keyframes glitch {
+    0%,100% { clip-path: inset(0 0 95% 0); transform: translate(3px, 0); }
+    5% { clip-path: inset(40% 0 50% 0); transform: translate(-4px, 1px); }
+    10% { clip-path: inset(80% 0 5% 0); transform: translate(4px, -1px); }
+    15% { clip-path: inset(10% 0 85% 0); transform: translate(0, 0); }
+    20% { clip-path: inset(60% 0 30% 0); transform: translate(-3px, 1px); }
+    25% { clip-path: inset(20% 0 70% 0); transform: translate(3px, -1px); }
+    30% { clip-path: inset(0 0 95% 0); transform: translate(0, 0); }
+  }
+  .glitch {
+    position: relative;
+    display: inline-block;
+  }
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  .glitch::before {
+    color: var(--blood-bright);
+    animation: glitch 2.5s infinite;
+    left: 3px;
+    opacity: 0.8;
+    text-shadow: -2px 0 var(--blood-bright);
+  }
+  .glitch::after {
+    color: var(--purple);
+    animation: glitch 2.5s 0.12s infinite;
+    left: -3px;
+    opacity: 0.8;
+    text-shadow: 2px 0 var(--purple);
+  }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 2.5rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--blood-bright), var(--purple), transparent);
+    box-shadow: 0 0 15px rgba(139,0,0,0.3);
+  }
+  .tl-item {
+    position: relative;
+    padding: 0 0 2.5rem 2.5rem;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 8px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--blood-bright);
+    box-shadow: 0 0 20px var(--blood-glow), 0 0 40px rgba(139,0,0,0.5);
+    animation: tlDotPulse 2s infinite;
+  }
+  @keyframes tlDotPulse {
+    0%,100% { box-shadow: 0 0 20px var(--blood-glow); }
+    50% { box-shadow: 0 0 35px var(--blood-glow), 0 0 60px rgba(139,0,0,0.7); }
+  }
+  .tl-year {
+    font-family: 'Black Ops One', cursive;
+    font-size: 0.8rem;
+    color: var(--blood-bright);
+    letter-spacing: 0.2em;
+    margin-bottom: 0.3rem;
+    text-shadow: 0 0 10px var(--blood-glow);
+  }
+  .tl-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+  .tl-desc {
+    color: var(--dim);
+    font-size: 0.9rem;
+  }
+
+  /* Quick command highlight */
+  .cmd-block {
+    background: #030308;
+    border-left: 4px solid var(--blood-bright);
+    padding: 1.5rem 1.8rem;
+    margin: 1.5rem 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--white);
+    border-radius: 0 4px 4px 0;
+    box-shadow: 0 0 30px rgba(139,0,0,0.08);
+    line-height: 1.9;
+  }
+  .cmd-block .comment { color: #4a3050; }
+
+</style>
+</head>
+<body>
+
+<!-- CUSTOM CURSOR -->
+<div class="custom-cursor" id="customCursor"></div>
+
+<!-- BLOOD OVERLAY -->
+<div id="blood-overlay"></div>
+
+<!-- MATRIX CANVAS -->
+<canvas id="matrix-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg class="nav-logo-svg" viewBox="0 0 40 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="20" cy="15" rx="18" ry="12" stroke="#ff1a1a" stroke-width="1.5" fill="none"/>
+      <circle cx="20" cy="15" r="6" fill="#ff1a1a" opacity="0.8"/>
+      <circle cx="20" cy="15" r="3" fill="#050510"/>
+      <line x1="2" y1="15" x2="38" y2="15" stroke="#ff1a1a" stroke-width="0.5" opacity="0.5"/>
+    </svg>
+    omino
+  </div>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#features">Features</a>
+    <a href="#modes">Modes</a>
+    <a href="#install">Install</a>
+    <a href="#integrations">Integrations</a>
+    <a href="#team">Team</a>
+    <a href="https://github.com/Athexblackhat/omino" style="color:var(--blood-bright);text-shadow:0 0 10px var(--blood-glow);">GitHub</a>
+  </div>
+</nav>
+
+<div class="page">
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div style="text-align:center;position:relative;z-index:2;">
+    <!-- LOGO SVG -->
+    <div class="logo-wrap">
+      <svg class="logo-svg" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="eyeGlowGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ff1a1a" stop-opacity="1"/>
+            <stop offset="60%" stop-color="#8b0000" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#050510" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="logoGlowFilter">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <!-- Outer ring -->
+        <circle class="logo-outer-ring" cx="90" cy="90" r="75" fill="none" stroke="#8b0000" stroke-width="2" opacity="0.6"/>
+        <circle class="logo-outer-ring" cx="90" cy="90" r="80" fill="none" stroke="#ff1a1a" stroke-width="1" opacity="0.4" stroke-dasharray="8 4"/>
+        <!-- Inner ring -->
+        <circle class="logo-inner-ring" cx="90" cy="90" r="60" fill="none" stroke="#533483" stroke-width="1.5" opacity="0.4"/>
+        <!-- Eye glow -->
+        <circle class="logo-eye" cx="90" cy="90" r="45" fill="url(#eyeGlowGrad)" opacity="0.5"/>
+        <!-- Eye outline -->
+        <ellipse cx="90" cy="90" rx="40" ry="25" fill="none" stroke="#ff1a1a" stroke-width="2.5" filter="url(#logoGlowFilter)"/>
+        <ellipse cx="90" cy="90" rx="30" ry="18" fill="none" stroke="#8b0000" stroke-width="1" opacity="0.6"/>
+        <!-- Iris -->
+        <circle class="logo-iris" cx="90" cy="90" r="14" fill="#ff1a1a" opacity="0.9"/>
+        <circle cx="90" cy="90" r="7" fill="#050510"/>
+        <circle cx="90" cy="90" r="3" fill="#ff1a1a" opacity="0.7"/>
+        <circle cx="85" cy="85" r="1.5" fill="white" opacity="0.6"/>
+        <!-- Scan line -->
+        <line class="logo-scan" x1="25" y1="90" x2="155" y2="90" stroke="#ff1a1a" stroke-width="1.5" opacity="0.7" filter="url(#logoGlowFilter)"/>
+        <!-- Orbiting particles -->
+        <circle class="logo-particle" cx="90" cy="30" r="2.5" fill="#ff1a1a" opacity="0.8" filter="url(#logoGlowFilter)"/>
+        <circle class="logo-particle2" cx="90" cy="150" r="2" fill="#533483" opacity="0.6"/>
+        <!-- Hex nodes -->
+        <circle cx="90" cy="15" r="3" fill="#ff1a1a" opacity="0.7"/>
+        <circle cx="90" cy="165" r="3" fill="#ff1a1a" opacity="0.7"/>
+        <circle cx="15" cy="90" r="3" fill="#ff1a1a" opacity="0.7"/>
+        <circle cx="165" cy="90" r="3" fill="#ff1a1a" opacity="0.7"/>
+      </svg>
+    </div>
+
+    <span class="hero-symbol">🜛</span>
+    <h1 class="hero-title glitch" data-text="omino">omino</h1>
+    <div class="hero-subtitle">Black Hat Edition · 2026</div>
+    <div class="hero-credits">
+      Developed by <span>ATHEX BLACK HAT</span> × <span>DIR CYBER</span>
+    </div>
+    <p class="hero-tagline">"In the shadows, it watches. In silence, it learns. When the time comes, it strikes."</p>
+    <div class="badges">
+      <span class="badge badge-gold">ATHEX BLACK HAT</span>
+      <span class="badge badge-purple">DIR CYBER</span>
+      <span class="badge badge-navy">90+ INTEGRATIONS</span>
+      <span class="badge badge-navy">DOCKER READY</span>
+      <span class="badge badge-gold">MULTI-DISTRO</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#install" class="btn btn-primary">⚡ Quick Install</a>
+      <a href="#overview" class="btn btn-secondary">📖 Documentation</a>
+      <a href="https://github.com/Athexblackhat/omino" class="btn btn-tertiary">🐙 GitHub</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stats-grid">
+    <div class="stat reveal"><span class="stat-num">500+</span><span class="stat-label">Red Teams</span></div>
+    <div class="stat reveal"><span class="stat-num">90+</span><span class="stat-label">Integrations</span></div>
+    <div class="stat reveal"><span class="stat-num">10K+</span><span class="stat-label">Detections</span></div>
+    <div class="stat reveal"><span class="stat-num">600+</span><span class="stat-label">Exploits</span></div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="container">
+    <div class="section-label">// Overview</div>
+    <h2 class="section-title reveal">The Advanced Offensive Security Platform</h2>
+    <p class="section-lead reveal">Forged by <strong style="color:var(--blood-bright);text-shadow:0 0 10px var(--blood-glow);">ATHEX BLACK HAT</strong> &amp; <strong style="color:var(--purple);">DIR CYBER</strong>. omino consolidates reconnaissance, vulnerability scanning, exploitation, and reporting into one unified workspace — battle-tested in the field since 2015.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;" class="reveal">
+      <!-- Architecture visual -->
+      <div>
+        <div style="margin-bottom:1rem;font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:var(--dim);letter-spacing:0.15em;">// SYSTEM ARCHITECTURE</div>
+        <div class="arch-flow" style="grid-template-columns:1fr auto 1fr">
+          <div class="arch-col">
+            <div class="arch-box accent">Terminal CLI</div>
+            <div class="arch-box accent">Web UI</div>
+            <div class="arch-box accent">REST API v1.0</div>
+          </div>
+          <div>
+            <div class="arch-arrow">⟶</div>
+            <div class="arch-center-box" style="margin:0.5rem 0">
+              <span class="arch-engine">ENGINE</span>
+              <span class="arch-engine-sub">omino Core</span>
+            </div>
+            <div class="arch-arrow">⟶</div>
+          </div>
+          <div class="arch-col">
+            <div class="arch-box">Recon Phase</div>
+            <div class="arch-box">Vuln Scan</div>
+            <div class="arch-box">Exploitation</div>
+            <div class="arch-box">Reporting</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div>
+      
+            <div class="tl-title" style="color:var(--blood-bright);text-shadow:0 0 10px var(--blood-glow);">Black Hat Edition ★</div>
+            <div class="tl-desc">Animated UI, multi-distro, rebranded by <span style="color:var(--blood-bright);">ATHEX BLACK HAT</span> × <span style="color:var(--purple);">DIR CYBER</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">// Key Features</div>
+    <h2 class="section-title reveal">Everything a Red Team Needs</h2>
+    <p class="section-lead reveal">90+ tools orchestrated. One command. Zero compromise. Crafted by operators, for operators.</p>
+    <div class="features-grid reveal">
+      <div class="feature-card">
+        <span class="feature-icon">🔍</span>
+        <div class="feature-title">Reconnaissance Engine</div>
+        <div class="feature-desc">OSINT gathering, subdomain enumeration, port scanning, and service detection — passive and active modes built in with automated correlation.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title">Vulnerability Scanning</div>
+        <div class="feature-desc">Nuclei templates, Nessus, OpenVAS, and the SC0PE framework. 10,000+ detection signatures with intelligent false-positive reduction.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💥</span>
+        <div class="feature-title">Auto-Exploitation</div>
+        <div class="feature-desc">Metasploit auto-exploit chains, custom payloads, brute force attacks, and credential harvesting — fully automated with safety controls.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Advanced Reporting</div>
+        <div class="feature-desc">Real-time dashboards, HTML/PDF/CSV/Excel exports, Slack notifications, and compliance mapping (PCI-DSS, HIPAA, NIST).</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🐳</span>
+        <div class="feature-title">Docker-First Deploy</div>
+        <div class="feature-desc">Universal image for Kali and BlackArch. Docker Compose orchestration. One-command environment spin-up on any platform.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🖥️</span>
+        <div class="feature-title">Animated Terminal UI</div>
+        <div class="feature-desc">Blood-drip scroll effects, matrix rain, gradient progress bars, spinners, and color-coded output. Security tools that look as dangerous as they are.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔌</span>
+        <div class="feature-title">REST API v1.0</div>
+        <div class="feature-desc">JSON API for CI/CD pipelines, SOAR, and SIEM integration. 100 req/min. Bearer token auth. Full programmatic control.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">AI / LLM Integration</div>
+        <div class="feature-desc">Native integrations with OpenAI, Claude, and Gemini for AI-assisted analysis and intelligent vulnerability prioritization.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🗓️</span>
+        <div class="feature-title">Scheduled Scanning</div>
+        <div class="feature-desc">Cron-integrated daily, weekly, and monthly scan scheduling. Continuous monitoring with workspace-based project management.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- SCAN MODES -->
+<section id="modes">
+  <div class="container">
+    <div class="section-label">// Scan Modes</div>
+    <h2 class="section-title reveal">14 Modes. One Platform.</h2>
+    <p class="section-lead reveal">From covert OSINT to all-out nuke — dial in the aggression level your engagement demands.</p>
+    <div class="modes-table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th>Description</th>
+            <th>Aggression</th>
+            <th>Noise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>normal</td><td>Active + passive scan of target and open ports</td><td><span class="pill pill-yellow">Medium</span></td><td><span class="pill pill-yellow">Medium</span></td></tr>
+          <tr><td>stealth</td><td>Quick, mostly non-intrusive enumeration</td><td><span class="pill pill-green">Low</span></td><td><span class="pill pill-green">Low</span></td></tr>
+          <tr><td>flyover</td><td>Fast multi-threaded high-level scans</td><td><span class="pill pill-yellow">Medium</span></td><td><span class="pill pill-yellow">Medium</span></td></tr>
+          <tr><td>airstrike</td><td>Open-port enumeration + basic fingerprinting</td><td><span class="pill pill-red">High</span></td><td><span class="pill pill-red">High</span></td></tr>
+          <tr><td>nuke</td><td>Full audit with ALL features enabled</td><td><span class="pill pill-max">Maximum</span></td><td><span class="pill pill-max">Maximum</span></td></tr>
+          <tr><td>discover</td><td>CIDR walk with scans on every live host</td><td><span class="pill pill-red">High</span></td><td><span class="pill pill-red">High</span></td></tr>
+          <tr><td>web</td><td>Web app scan on ports 80/443 only</td><td><span class="pill pill-yellow">Medium</span></td><td><span class="pill pill-yellow">Medium</span></td></tr>
+          <tr><td>webscan</td><td>Full HTTP + HTTPS via Burp + Arachni</td><td><span class="pill pill-red">High</span></td><td><span class="pill pill-red">High</span></td></tr>
+          <tr><td>vulnscan</td><td>OpenVAS vulnerability assessment</td><td><span class="pill pill-red">High</span></td><td><span class="pill pill-green">Low</span></td></tr>
+          <tr><td>mass*</td><td>Multi-target variants of all above modes</td><td><span class="pill pill-red">High</span></td><td><span class="pill pill-red">High</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="container">
+    <div class="section-label">// Installation</div>
+    <h2 class="section-title reveal">Deploy in Minutes</h2>
+    <p class="section-lead reveal">Native packages for Debian, RHEL, Arch, and macOS. Or go Docker for universal deployment across any environment.</p>
+
+    <div class="reveal">
+      <div class="install-tabs">
+        <button class="tab-btn active" onclick="switchTab(event,'linux')">🐧 Linux</button>
+        <button class="tab-btn" onclick="switchTab(event,'docker')">🐳 Docker</button>
+        <button class="tab-btn" onclick="switchTab(event,'mac')">🍎 macOS</button>
+        <button class="tab-btn" onclick="switchTab(event,'aws')">☁️ AWS</button>
+      </div>
+
+      <div id="tab-linux" class="tab-pane active">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <span class="terminal-title">bash — omino installer</span>
+          </div>
+          <div class="terminal-body">
+            <div><span class="t-comment"># Clone the repository</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">git clone https://github.com/Athexblackhat/omino.git</span></div>
+            <div><span class="t-out">Cloning into 'omino'...</span></div>
+            <div><span class="t-out">Receiving objects: 100% — done.</span></div>
+            <br/>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">cd omino</span></div>
+            <br/>
+            <div><span class="t-comment"># Interactive installer (auto-detects your distro)</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">sudo bash install.sh</span></div>
+            <br/>
+            <div><span class="t-info">[*] Detected: Kali Linux (Debian-based)</span></div>
+            <div><span class="t-info">[*] Installing dependencies...</span></div>
+            <div><span class="t-info">[*] Configuring 90+ tools...</span></div>
+            <div><span class="t-out">[✓] omino Black Hat Edition ready.</span></div>
+            <div><span class="t-out">[✓] Developed by ATHEX BLACK HAT × DIR CYBER</span></div>
+            <br/>
+            <div><span class="t-comment"># Force install (no prompts)</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">sudo bash install.sh force<span class="t-cursor"></span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-docker" class="tab-pane">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <span class="terminal-title">docker — kali / blackarch</span>
+          </div>
+          <div class="terminal-body">
+            <div><span class="t-comment"># Kali Linux base image</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">sudo docker compose up</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">sudo docker run --privileged -it omino-kali-linux /bin/bash</span></div>
+            <br/>
+            <div><span class="t-comment"># BlackArch base image</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">sudo docker compose -f docker-compose-blackarch.yml up</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">sudo docker run --privileged -it omino-blackarch /bin/bash<span class="t-cursor"></span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-mac" class="tab-pane">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <span class="terminal-title">bash — macOS + homebrew</span>
+          </div>
+          <div class="terminal-body">
+            <div><span class="t-comment"># Install Homebrew first</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span></div>
+            <br/>
+            <div><span class="t-comment"># Clone and install</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">git clone https://github.com/Athexblackhat/omino.git && cd omino</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">sudo bash install.sh<span class="t-cursor"></span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-aws" class="tab-pane">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <span class="terminal-title">AWS Marketplace</span>
+          </div>
+          <div class="terminal-body">
+            <div><span class="t-info">[1] Visit AWS Marketplace → Search "omino"</span></div>
+            <div><span class="t-info">[2] Click "Continue to Subscribe"</span></div>
+            <div><span class="t-info">[3] Configure region and instance type</span></div>
+            <div><span class="t-info">[4] Click "Continue to Launch"</span></div>
+            <div><span class="t-info">[5] SSH to EC2 public IP</span></div>
+            <br/>
+            <div><span class="t-out">[✓] omino is preinstalled and ready.</span></div>
+            <div><span class="t-prompt">$ </span><span class="t-cmd">omino --status<span class="t-cursor"></span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem" class="reveal">
+      <div style="margin-bottom:0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:var(--dim);letter-spacing:0.15em;">// QUICK START</div>
+      <div class="cmd-block">
+        <div class="comment"># Basic scan</div>
+        <div>omino -t example.com -m normal</div>
+        <br/>
+        <div class="comment"># Full nuke with project workspace</div>
+        <div>omino -t example.com -m nuke -w myproject</div>
+        <br/>
+        <div class="comment"># Stealth recon with OSINT</div>
+        <div>omino -t example.com -m stealth -o -re</div>
+        <br/>
+        <div class="comment"># Multi-target airstrike from file</div>
+        <div>omino -f targets.txt -m airstrike</div>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--dim);">Results stored in <span style="color:var(--blood-bright);text-shadow:0 0 10px var(--blood-glow);">/usr/share/omino/loot/&lt;workspace&gt;/</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- INTEGRATIONS -->
+<section id="integrations">
+  <div class="container">
+    <div class="section-label">// Integrations</div>
+    <h2 class="section-title reveal">90+ Tools Orchestrated</h2>
+    <p class="section-lead reveal">omino speaks every tool's language natively — from Nessus to Metasploit to OpenAI.</p>
+    <div class="integrations-cats reveal">
+      <div class="int-cat">
+        <div class="int-cat-title">🛡️ Vulnerability Scanners</div>
+        <div class="int-tags">
+          <span class="int-tag">Nessus</span><span class="int-tag">OpenVAS</span><span class="int-tag">GVM 21.x</span><span class="int-tag">Nuclei</span>
+        </div>
+      </div>
+      <div class="int-cat">
+        <div class="int-cat-title">🌐 Web App Testing</div>
+        <div class="int-tags">
+          <span class="int-tag">Burp Suite Pro</span><span class="int-tag">OWASP ZAP</span><span class="int-tag">WPScan</span><span class="int-tag">Arachni</span><span class="int-tag">Nikto</span>
+        </div>
+      </div>
+      <div class="int-cat">
+        <div class="int-cat-title">💥 Exploitation</div>
+        <div class="int-tags">
+          <span class="int-tag">Metasploit</span><span class="int-tag">Hydra</span><span class="int-tag">SQLMap</span><span class="int-tag">John the Ripper</span>
+        </div>
+      </div>
+      <div class="int-cat">
+        <div class="int-cat-title">🔍 Reconnaissance</div>
+        <div class="int-tags">
+          <span class="int-tag">Nmap</span><span class="int-tag">Masscan</span><span class="int-tag">Amass</span><span class="int-tag">Subfinder</span><span class="int-tag">Shodan</span><span class="int-tag">Censys</span>
+        </div>
+      </div>
+      <div class="int-cat">
+        <div class="int-cat-title">🤖 AI / LLM</div>
+        <div class="int-tags">
+          <span class="int-tag">OpenAI</span><span class="int-tag">Claude</span><span class="int-tag">Gemini</span>
+        </div>
+      </div>
+      <div class="int-cat">
+        <div class="int-cat-title">📣 Notifications & DevOps</div>
+        <div class="int-tags">
+          <span class="int-tag">Slack</span><span class="int-tag">GitHub API</span><span class="int-tag">Jira</span><span class="int-tag">Email</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="container">
+    <div class="section-label">// Team</div>
+    <h2 class="section-title reveal">Forged in the Shadows</h2>
+    <p class="section-lead reveal">Core development team and 35+ contributors worldwide. The alliance behind the eye.</p>
+    <div class="team-grid reveal">
+      <div class="team-card">
+        <div class="team-avatar">👁️</div>
+        <div class="team-name">ATHEX BLACK HAT</div>
+        <div class="team-role">Lead Developer &amp; Architect</div>
+        <div class="team-handle">Rebranding · Multi-Distro · Animated UI</div>
+        <a href="https://github.com/Athexblackhat" class="team-link">@Athexblackhat</a>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">💀</div>
+        <div class="team-name">DIR CYBER</div>
+        <div class="team-role">Security Researcher &amp;Forensic Investigator </div>
+        <div class="team-handle">Penetration Tester</div>
+        <a href="#" class="team-link">@dircyber</a>
+      </div>
+    <div class="warning-banner reveal" style="margin-top:3rem">
+      <strong>⚠ AUTHORIZED USE ONLY</strong>
+      <p>omino is designed exclusively for authorized security testing. You are responsible for obtaining explicit permission before scanning any system. Unauthorized scanning is illegal and may result in criminal prosecution. The developers assume no liability for misuse. Use responsibly. The eye sees everything — including misuse.</p>
+    </div>
+  </div>
+</section>
+
+</div><!-- .page -->
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-symbol">🜛</span>
+  <div class="footer-title">omino — The Eye That Sees All</div>
+  <div class="footer-credits">Developed by <span>ATHEX BLACK HAT</span> × <span>DIR CYBER</span></div>
+  <div class="footer-tagline">Built by pentesters. For pentesters. Since 2015.</div>
+  <div class="footer-links">
+    <a href="https://github.com/Athexblackhat/omino">GitHub</a>
+    <a href="https://github.com/Athexblackhat/omino">Website</a>
+    <a href="https://github.com/Athexblackhat/omino/wiki">Wiki</a>
+    <a href="https://github.com/Athexblackhat/omino/issues">Issues</a>
+    <a href="https://github.com/Athexblackhat/omino/blob/main/LICENSE.md">License</a>
+    <a href="https://github.com/Athexblackhat/omino/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+  <div class="footer-copy">MIT License · © ATHEX BLACK HAT × DIR CYBER · Topics: penetration-testing · offensive-security · red-team · osint · bug-bounty · exploitation</div>
+</footer>
+
+<script>
+/* ── MATRIX RAIN ── */
+(function(){
+  const canvas = document.getElementById('matrix-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, cols, drops;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()🜛☠⚡';
+  function init(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    cols = Math.floor(w / 18);
+    drops = Array(cols).fill(1);
+  }
+  init();
+  window.addEventListener('resize', init);
+  function draw(){
+    ctx.fillStyle = 'rgba(2,2,8,0.06)';
+    ctx.fillRect(0,0,w,h);
+    ctx.font = '13px "Share Tech Mono"';
+    drops.forEach((y,i)=>{
+      const ch = chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillStyle = Math.random()>0.95 ? '#ffffff' : i%4===0 ? '#ff1a1a' : i%4===1 ? '#8b0000' : '#533483';
+      ctx.fillText(ch, i*18, y*18);
+      if(y*18>h && Math.random()>0.97) drops[i]=0;
+      drops[i]++;
+    });
+  }
+  setInterval(draw, 45);
+})();
+
+/* ── BLOOD CURSOR ── */
+(function(){
+  const cursor = document.getElementById('customCursor');
+  let mouseX = -100, mouseY = -100;
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.left = (mouseX - 10) + 'px';
+    cursor.style.top = (mouseY - 10) + 'px';
+  });
+  document.addEventListener('mouseleave', () => {
+    cursor.style.opacity = '0';
+  });
+  document.addEventListener('mouseenter', () => {
+    cursor.style.opacity = '1';
+  });
+})();
+
+/* ── BLOOD DRIP ON SCROLL ── */
+(function(){
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+    const scrollDiff = Math.abs(currentScroll - lastScroll);
+    if (scrollDiff > 80) {
+      const drip = document.createElement('div');
+      drip.className = 'blood-drip';
+      drip.style.left = Math.random() * 100 + '%';
+      drip.style.top = '-10px';
+      drip.style.width = (Math.random() * 4 + 2) + 'px';
+      drip.style.height = (Math.random() * 30 + 20) + 'px';
+      drip.style.background = Math.random() > 0.5 ? 
+        'linear-gradient(180deg, transparent, #ff1a1a88, #8b000044)' : 
+        'linear-gradient(180deg, transparent, #dc143c88, #4a000044)';
+      drip.style.borderRadius = '0 0 50% 50%';
+      document.body.appendChild(drip);
+      setTimeout(() => drip.remove(), 2000);
+    }
+    lastScroll = currentScroll;
+  });
+})();
+
+/* ── TAB SWITCHER ── */
+function switchTab(e, id){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+/* ── SCROLL REVEAL ── */
+(function(){
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(el=>io.observe(el));
+})();
+
+/* ── COUNTER ANIMATION ── */
+(function(){
+  const nums = document.querySelectorAll('.stat-num');
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      const el = e.target;
+      const text = el.textContent;
+      const num = parseInt(text.replace(/\D/g,''));
+      const suffix = text.replace(/[\d]/g,'');
+      let start = 0;
+      const step = Math.ceil(num/50);
+      const timer = setInterval(()=>{
+        start += step;
+        if(start>=num){ el.textContent=num+suffix; clearInterval(timer); }
+        else el.textContent=start+suffix;
+      }, 25);
+      io.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  nums.forEach(n=>io.observe(n));
+})();
+
+/* ── SMOOTH PARALLAX FOR BLOOD OVERLAY ── */
+(function(){
+  const overlay = document.getElementById('blood-overlay');
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    overlay.style.transform = `translateY(${scrollY * 0.03}px)`;
+  });
+})();
+</script>
+</body>
+</html>

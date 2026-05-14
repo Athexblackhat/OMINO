@@ -1,9 +1,0 @@
-AUTHOR='@Athexblackhat'
-VULN_NAME='Apache Tomcat Detected'
-URI='/404_DOES_NOT_EXIST'
-METHOD='GET'
-MATCH="Apache\ Tomcat\/[0-9]?[0-9]\.[0-9]?[0-9]\.[0-9]?[0-9]"
-SEVERITY='P5 - INFO'
-CURL_OPTS="--user-agent '' -s -L --insecure"
-SECONDARY_COMMANDS=''
-GREP_OPTIONS='-o'

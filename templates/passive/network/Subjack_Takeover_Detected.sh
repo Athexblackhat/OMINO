@@ -1,9 +1,0 @@
-AUTHOR='@Athexblackhat'
-VULN_NAME='Subjack Takeover Detected'
-FILENAME="$LOOT_DIR/nmap/subjack-$TARGET.txt"
-MATCH="\[Vulnerable\]"
-SEVERITY='P2 - HIGH'
-GREP_OPTIONS='-i'
-SEARCH='positive'
-SECONDARY_COMMANDS=''
-TYPE="network"
